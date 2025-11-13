@@ -1,7 +1,4 @@
-import axios from "axios";
-const BASE = "https://flyora-backend.onrender.com/api/v1/cart";
-// const BASE = "http://localhost:8080/api/v1/cart";
-//Base là URL gốc của nhóm API -> dễ quản lý, tái sử dụng, và bảo trì code API
+import axiosClient from "../config/axiosConfig";
 
 // Lấy giỏ hàng
 export const getCart = async (items) => {
@@ -10,17 +7,17 @@ export const getCart = async (items) => {
     params.append("productId", it.id);
     params.append("quantity", it.qty);
   });
- const res = await axios.get(`${BASE}?${params.toString()}`);
-  return res.data; 
+ const res = await axiosClient.get(`/api/v1/cart?${params.toString()}`);
+  return res;
 };
 
 
 // Cập nhật số lượng
 export const updateQty = async (productId, quantity) => {
-  await axios.put(`${BASE}/${productId}`, { quantity });
+  return await axiosClient.put(`/api/v1/cart/${productId}`, { quantity });
 };
 
 // Xoá sản phẩm
 export const deleteItem = async (productId) => {
-  await axios.delete(`${BASE}/${productId}`);
+  return await axiosClient.delete(`/api/v1/cart/${productId}`);
 };

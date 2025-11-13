@@ -21,9 +21,7 @@
 // }
 
 
-import axios from "axios";
-
-const API_URL = "https://flyora-backend.onrender.com/api/v1/products/filter";
+import axiosClient from "../config/axiosConfig";
 
 /**
  * Lấy danh sách sản phẩm theo điều kiện
@@ -49,8 +47,8 @@ export async function getProductsByCategory(params = {}) {
   };
 
   try {
-    const response = await axios.post(API_URL, requestBody);
-    return response.data;
+    const response = await axiosClient.post("/api/v1/products/filter", requestBody);
+    return response;
   } catch (error) {
     console.error("Failed to fetch products:", error);
     throw error;

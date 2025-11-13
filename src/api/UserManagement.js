@@ -1,11 +1,11 @@
-import axios from "axios";
+import axiosClient from "../config/axiosConfig";
 
 export const UserAccounts = async (requesterId) => {
   try {
-    const response = await axios.get(
-      `https://flyora-backend.onrender.com/api/v1/admin/accounts?requesterId=${requesterId}`
+    const response = await axiosClient.get(
+      `/api/v1/admin/accounts?requesterId=${requesterId}`
     );
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Failed:", error);
     throw error;

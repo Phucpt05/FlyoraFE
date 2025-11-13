@@ -1,9 +1,9 @@
-import axios from 'axios';
+import axiosClient from 'config/axiosConfig';
 
 export const LoginAPI = async (username, password) => {
 
   console.log(username, password);
-  const res = await axios.post('https://flyora-backend.onrender.com/api/auth/login', {
+  const res = await axiosClient.post('/api/auth/login', {
     username,
     password
   });

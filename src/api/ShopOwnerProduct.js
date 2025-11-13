@@ -1,16 +1,9 @@
-import axios from "axios";
+import axiosClient from "../config/axiosConfig";
 
-export const getProductOwners = async (authorization) => {
+export const getProductOwners = async () => {
   try {
-    const response = await axios.get(
-      `https://flyora-backend.onrender.com/api/v1/owner/products`,
-      {
-        headers: {
-          Authorization: `Bearer ${authorization}`,
-        },
-      }
-    );
-    return response.data;
+    const response = await axiosClient.get("/api/v1/owner/products");
+    return response;
   } catch (error) {
     console.error("Error fetching product:", error);
     throw error;

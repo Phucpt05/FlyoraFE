@@ -1,11 +1,11 @@
 // src/api/UserActivityLog.js
-import axios from "axios";
+import axiosClient from "../config/axiosConfig";
 export const getUserActivityLogs = async (requesterId) => {
   try {
-    const response = await axios.get(
-      `https://flyora-backend.onrender.com/api/v1/admin/accounts/logs?requesterId=${requesterId}`
+    const response = await axiosClient.get(
+      `/api/v1/admin/accounts/logs?requesterId=${requesterId}`
     );
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Failed:", error);
     throw error;

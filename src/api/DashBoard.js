@@ -1,16 +1,9 @@
-import axios from "axios";
+import axiosClient from "../config/axiosConfig";
 
-export const getDashboardData = async (authorization) => {
+export const getDashboardData = async () => {
   try {
-    const response = await axios.get(
-      `https://flyora-backend.onrender.com/api/v1/owner/dashboard/products/top-sales`,
-      {
-        headers: {
-          Authorization: `Bearer ${authorization}`,
-        },
-      }
-    );
-    return response.data;
+    const response = await axiosClient.get("/api/v1/owner/dashboard/products/top-sales");
+    return response;
   } catch (error) {
     console.error("Failed to fetch dashboard data:", error);
     throw error;

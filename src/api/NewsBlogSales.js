@@ -1,12 +1,9 @@
-// sau nay có thể thay thế bằng axios để lấy dữ liệu từ API
-import axios from "axios";
-
-const API_URL = "https://flyora-backend.onrender.com/api/v1/news-blog-sales";
+import axiosClient from "../config/axiosConfig";
 
 const getNewsBlogSalesPosts = async () => {
   try {
-    const response = await axios.get(API_URL);
-    return response.data;
+    const response = await axiosClient.get("/api/v1/news-blog-sales");
+    return response;
   } catch (error) {
     console.error("Error fetching news/blog sales posts:", error);
     throw error;
@@ -21,11 +18,11 @@ const createNewsBlogSalesPost = async (
   }
 ) => {
   try {
-    const response = await axios.post(`https://flyora-backend.onrender.com/api/v1/admin/accounts/news?requesterId=${requesterId}`, {
+    const response = await axiosClient.post(`/api/v1/admin/accounts/news?requesterId=${requesterId}`, {
       title,
       url
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Error creating news/blog sales post:", error);
     throw error;

@@ -1,16 +1,14 @@
-import axios from "axios";
-
-const BASE = "https://flyora-backend.onrender.com/api/v1";
+import axiosClient from "../config/axiosConfig";
 
 /**
  * Lấy danh sách Tỉnh/Thành
  * @param {number} requesterId
  */
 export const getProvinces = async (requesterId) => {
-  const res = await axios.get(`${BASE}/shipping-utils/provinces`, {
+  const res = await axiosClient.get(`/api/v1/shipping-utils/provinces`, {
     params: { requesterId },
   });
-  return res.data;
+  return res;
 };
 
 /**
@@ -19,10 +17,10 @@ export const getProvinces = async (requesterId) => {
  * @param {number} provinceId
  */
 export const getDistricts = async (requesterId, provinceId) => {
-  const res = await axios.get(`${BASE}/shipping-utils/districts`, {
+  const res = await axiosClient.get(`/api/v1/shipping-utils/districts`, {
     params: { requesterId, provinceId },
   });
-  return res.data;
+  return res;
 };
 
 /**
@@ -31,8 +29,8 @@ export const getDistricts = async (requesterId, provinceId) => {
  * @param {number} districtId
  */
 export const getWards = async (requesterId, districtId) => {
-  const res = await axios.get(`${BASE}/shipping-utils/wards`, {
+  const res = await axiosClient.get(`/api/v1/shipping-utils/wards`, {
     params: { requesterId, districtId },
   });
-  return res.data;
+  return res;
 };

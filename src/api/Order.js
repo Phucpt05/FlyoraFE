@@ -1,4 +1,4 @@
-import axios from "axios";
+import axiosClient from "../config/axiosConfig";
 
 /**
  * Tạo đơn hàng mới
@@ -7,10 +7,10 @@ import axios from "axios";
  * @returns { orderId, status }
  */
 export const createOrder = async (customerId, items) => {
-  const res = await axios.post("https://flyora-backend.onrender.com/api/v1/orders", {
+  const res = await axiosClient.post("/api/v1/orders", {
     customerId,
     items,
   });
 
-  return res.data;
+  return res;
 };

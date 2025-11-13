@@ -1,16 +1,9 @@
-import axios from "axios";
+import axiosClient from "../config/axiosConfig";
 
-export const deleteProduct = async (authorization, id) => {
+export const deleteProduct = async (id) => {
   try {
-    const response = await axios.delete(
-      `https://flyora-backend.onrender.com/api/v1/owner/products/${id}`,
-      {
-        headers: {
-          Authorization: authorization,
-        },
-      }
-    );
-    return response.data;
+    const response = await axiosClient.delete(`/api/v1/owner/products/${id}`);
+    return response;
   } catch (error) {
     console.error("Failed to delete product:", error);
     throw error;

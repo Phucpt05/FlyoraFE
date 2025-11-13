@@ -1,11 +1,11 @@
-import axios from "axios";
+import axiosClient from "../config/axiosConfig";
 
 export const deleteAccount = async (id, requesterId) => {
   try {
-    const response = await axios.delete(
-      `https://flyora-backend.onrender.com/api/v1/admin/accounts/${id}?requesterId=${requesterId}`
+    const response = await axiosClient.delete(
+      `/api/v1/admin/accounts/${id}?requesterId=${requesterId}`
     );
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Failed to delete account:", error);
     throw error;

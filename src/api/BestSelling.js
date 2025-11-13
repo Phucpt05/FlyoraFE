@@ -1,5 +1,4 @@
-import axios from 'axios';
-
+import axiosClient from "../config/axiosConfig";
 
 // Temporary mock data for preview. Uncomment to use mock instead of real API:
 const mockBestSelling = [
@@ -12,9 +11,8 @@ export async function getBestSellingProducts() {
   return new Promise(resolve => setTimeout(() => resolve(mockBestSelling), 300));
 }
 
-
+// Uncomment to use real API instead of mock data
 // export async function getBestSellingProducts() {
-//   // TODO: Replace '/api/best-selling' with your actual endpoint
-//   const response = await axios.get('/api/best-selling');
-//   return response.data;
+//   const response = await axiosClient.get('/api/best-selling');
+//   return response;
 // }

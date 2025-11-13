@@ -1,8 +1,8 @@
-import axios from 'axios';
+import axiosClient from "../../config/axiosConfig";
 
-export const RegisterAPI = async (username, email, password, phone,name) => {
+export const RegisterAPI = async (username, email, password, phone, name) => {
   try {
-    const res = await axios.post('https://flyora-backend.onrender.com/api/auth/register', {
+    const res = await axiosClient.post('/api/auth/register', {
       username,
       password,
       email,
@@ -10,7 +10,7 @@ export const RegisterAPI = async (username, email, password, phone,name) => {
       name,
     });
 
-    return res.data;
+    return res;
   } catch (error) {
     // In lỗi chi tiết
     if (error.response) {

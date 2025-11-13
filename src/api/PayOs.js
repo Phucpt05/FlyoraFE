@@ -1,7 +1,6 @@
-import axios from "axios";
-const BASE = "https://flyora-backend.onrender.com/api";
+import axiosClient from "../config/axiosConfig";
 
 export const createPayOSLink = async (orderId) => {
-  const res = await axios.post(`${BASE}/payos/create-link/${orderId}`);
-  return res.data;
+  const res = await axiosClient.post(`/api/payos/create-link/${orderId}`);
+  return res;
 };

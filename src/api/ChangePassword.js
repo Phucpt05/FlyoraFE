@@ -1,17 +1,9 @@
-import axios from "axios";
+import axiosClient from "../config/axiosConfig";
 
-export const changePassword = async (token, currentPassword, newPassword) => {
-  const response = await axios.put(
-    "https://flyora-backend.onrender.com/api/v1/profile/password",
-    {
-      currentPassword,
-      newPassword,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  return response.data;
+export const changePassword = async (currentPassword, newPassword) => {
+  const response = await axiosClient.put("/api/v1/profile/password", {
+    currentPassword,
+    newPassword,
+  });
+  return response;
 };

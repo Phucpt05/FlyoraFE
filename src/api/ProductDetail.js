@@ -1,10 +1,8 @@
-import axios from "axios";
+import axiosClient from "../config/axiosConfig";
 export const getProductDetail = async (id) => {
   try {
-    const response = await axios.get(
-      `https://flyora-backend.onrender.com/api/v1/products/${id}`
-    );
-    return response.data;
+    const response = await axiosClient.get(`/api/v1/products/${id}`);
+    return response;
   } catch (error) {
     console.error("Error fetching product details:", error);
     throw error;

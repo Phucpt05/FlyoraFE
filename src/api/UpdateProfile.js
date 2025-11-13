@@ -1,13 +1,7 @@
 // src/api/UpdateProfile.js
-import axios from "axios";
+import axiosClient from "../config/axiosConfig";
 
-export const updateProfile = async (token, data) => {
-  const response = await axios.put("https://flyora-backend.onrender.com/api/v1/profile",data,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  return response.data;
+export const updateProfile = async (data) => {
+  const response = await axiosClient.put("/api/v1/profile", data);
+  return response;
 };

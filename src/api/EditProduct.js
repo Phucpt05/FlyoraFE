@@ -1,7 +1,6 @@
-import axios from "axios";
+import axiosClient from "../config/axiosConfig";
 
 export const editProduct = async (
-  authorization,
   {
     id,
     name,
@@ -20,8 +19,8 @@ export const editProduct = async (
   }
 ) => {
   try {
-    const response = await axios.put(
-      `https://flyora-backend.onrender.com/api/v1/owner/products/${id}`,
+    const response = await axiosClient.put(
+      `/api/v1/owner/products/${id}`,
       {
         name,
         description,
@@ -36,14 +35,9 @@ export const editProduct = async (
         color,
         dimensions,
         imageUrl,
-      },
-      {
-        headers: {
-          Authorization: authorization,
-        },
       }
     );
-    return response.data;
+    return response;
   } catch (error) {
     throw error;
   }

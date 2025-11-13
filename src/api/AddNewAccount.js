@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosClient from "config/axiosConfig";
 
 export const addNewAccount = async (
   requesterId,
@@ -16,8 +17,8 @@ export const addNewAccount = async (
   }
 ) => {
   try {
-    const response = await axios.post(
-      `https://flyora-backend.onrender.com/api/v1/admin/accounts?requesterId=${requesterId}`,
+    const response = await axiosClient.post(
+      `/api/v1/admin/accounts?requesterId=${requesterId}`,
       {
         username,
         password,

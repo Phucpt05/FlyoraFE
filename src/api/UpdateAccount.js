@@ -1,4 +1,4 @@
-import axios from "axios";
+import axiosClient from "../config/axiosConfig";
 
 export const updateAccount = async (
   id,
@@ -19,8 +19,8 @@ export const updateAccount = async (
   }
 ) => {
   try {
-    const response = await axios.put(
-      `https://flyora-backend.onrender.com/api/v1/admin/accounts/${id}?requesterId=${requesterId}`,
+    const response = await axiosClient.put(
+      `/api/v1/admin/accounts/${id}?requesterId=${requesterId}`,
       {
         username,
         password,
@@ -36,7 +36,7 @@ export const updateAccount = async (
         shopOwnerId
       }
     );
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Failed to update account:", error);
     throw error;

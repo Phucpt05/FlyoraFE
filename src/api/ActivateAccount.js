@@ -1,17 +1,12 @@
-import axios from "axios";
+import axiosClient from "../config/axiosConfig";
 
 export const activateAccount = async (accountId, requesterId) => {
   try {
-    const response = await axios.put(
-      `https://flyora-backend.onrender.com/api/v1/admin/accounts/${accountId}/activate?requesterId=${requesterId}`,
-      {},
-      {
-        headers: {
-          accept: "*/*",
-        },
-      }
+    const response = await axiosClient.put(
+      `/api/v1/admin/accounts/${accountId}/activate?requesterId=${requesterId}`,
+      {}
     );
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Error activating account:", error);
     throw error;

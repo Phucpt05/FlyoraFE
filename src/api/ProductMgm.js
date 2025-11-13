@@ -1,13 +1,9 @@
 
-import axios from "axios";
-export const getAllProductsByOwner = async (token) => {
-  const res = await axios.get("https://flyora-backend.onrender.com/api/v1/owner/products", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+import axiosClient from "../config/axiosConfig";
+export const getAllProductsByOwner = async () => {
+  const res = await axiosClient.get("/api/v1/owner/products");
 
-  console.log("res.data:", res.data); 
+  console.log("res:", res);
 
-  return res.data; // Lỗi sẽ xảy ra nếu không có key "products"
+  return res; // Lỗi sẽ xảy ra nếu không có key "products"
 };
