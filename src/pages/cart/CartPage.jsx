@@ -20,14 +20,14 @@ const CartPage = () => {
       try {
         const rawCart = JSON.parse(localStorage.getItem("cart")) || [];
 
-        const localCart = rawCart.filter(
+        const localCart = Array.isArray(rawCart) ? rawCart.filter(
           (item) =>
             item &&
             item.id !== undefined &&
             item.id !== null &&
             typeof item.id === "number" &&
             item.qty > 0
-        );
+        ) : [];
 
         if (localCart.length === 0) {
           setItems([]);
@@ -36,9 +36,25 @@ const CartPage = () => {
           return;
         }
 
-        const productData = await getCart(localCart);
+        const productDataRes = await getCart(localCart);
+        
+        // Extract the actual data from the response
+        let productData = [];
+        if (productDataRes && productDataRes.data) {
+          if (Array.isArray(productDataRes.data)) {
+            productData = productDataRes.data;
+          } else if (productDataRes.data.items && Array.isArray(productDataRes.data.items)) {
+            productData = productDataRes.data.items;
+          } else if (productDataRes.data.products && Array.isArray(productDataRes.data.products)) {
+            productData = productDataRes.data.products;
+          }
+        } else if (Array.isArray(productDataRes)) {
+          productData = productDataRes;
+        }
+        
+        console.log('Processed cart data:', productData);
 
-        const merged = productData.map((prod) => {
+        const merged = Array.isArray(productData) ? productData.map((prod) => {
           const match = localCart.find(
             (c) => c.id === prod.id || c.id === prod.productId
           );
@@ -51,7 +67,7 @@ const CartPage = () => {
             qty: match ? match.qty : 1,
             selected: true,
           };
-        });
+        }) : [];
 
         setItems(merged);
         updateCartCountFromLocalStorage(); // cập nhật khi load lại
@@ -66,9 +82,9 @@ const CartPage = () => {
   }, [location]);
 
   const syncToLocalStorage = (updated) => {
-    const simplified = updated
+    const simplified = Array.isArray(updated) ? updated
       .filter((it) => typeof it.qty === "number" && it.qty > 0)
-      .map(({ id, qty }) => ({ id, qty }));
+      .map(({ id, qty }) => ({ id, qty })) : [];
 
     localStorage.setItem("cart", JSON.stringify(simplified));
     updateCartCountFromLocalStorage(); // cập nhật sau khi ghi
@@ -76,7 +92,7 @@ const CartPage = () => {
 
   const toggleSelect = (id) => {
     setItems((prev) =>
-      prev.map((it) => (it.id === id ? { ...it, selected: !it.selected } : it))
+      Array.isArray(prev) ? prev.map((it) => (it.id === id ? { ...it, selected: !it.selected } : it)) : []
     );
   };
 
@@ -84,31 +100,31 @@ const CartPage = () => {
     if (!Number.isInteger(newQty) || newQty < 1) {
       removeItem(id); // đã gọi sync và update bên trong
     } else {
-      const updated = items.map((it) =>
+      const updated = Array.isArray(items) ? items.map((it) =>
         it.id === id ? { ...it, qty: newQty } : it
-      );
+      ) : [];
       setItems(updated);
       syncToLocalStorage(updated);
     }
   };
 
   const removeItem = (id) => {
-    const updated = items.filter((it) => it.id !== id);
+    const updated = Array.isArray(items) ? items.filter((it) => it.id !== id) : [];
     setItems(updated);
     syncToLocalStorage(updated);
   };
 
   const toggleSelectAll = () => {
     const allSelected = items.every((it) => it.selected);
-    setItems((prev) => prev.map((it) => ({ ...it, selected: !allSelected })));
+    setItems((prev) => Array.isArray(prev) ? prev.map((it) => ({ ...it, selected: !allSelected })) : []);
   };
 
   const selectedItems = useMemo(
-    () => items.filter((it) => it.selected),
+    () => Array.isArray(items) ? items.filter((it) => it.selected) : [],
     [items]
   );
   const total = useMemo(
-    () => selectedItems.reduce((sum, it) => sum + it.price * it.qty, 0),
+    () => Array.isArray(selectedItems) ? selectedItems.reduce((sum, it) => sum + it.price * it.qty, 0) : 0,
     [selectedItems]
   );
 
@@ -135,7 +151,7 @@ const CartPage = () => {
 
         {/* Danh sách sản phẩm */}
         <div className="space-y-6">
-          {items.map((item) => (
+          {Array.isArray(items) && items.map((item) => (
             <CartItem
               key={item.id}
               item={item}
@@ -163,10 +179,10 @@ const CartPage = () => {
               }
 
               // Ghi lại selectedItems vào localStorage để CheckoutPage chỉ dùng những sản phẩm đó
-              const selectedCart = selectedItems.map(({ id, qty }) => ({
+              const selectedCart = Array.isArray(selectedItems) ? selectedItems.map(({ id, qty }) => ({
                 id,
                 qty,
-              }));
+              })) : [];
               localStorage.setItem("cart", JSON.stringify(selectedCart));
 
               navigate("/checkout");

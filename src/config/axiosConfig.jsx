@@ -1,7 +1,11 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-    baseURL: process.env.REACT_APP_API_URL
+    baseURL: process.env.REACT_APP_API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    withCredentials: false
 });
 
 axiosClient.interceptors.request.use(function (config) {
@@ -15,8 +19,15 @@ axiosClient.interceptors.request.use(function (config) {
 });
 
 axiosClient.interceptors.response.use(
-    response => response,
+    response => {
+        console.log('Response received:', response);
+        return response;
+    },
     error => {
+        console.error('Axios error:', error);
+        console.error('Error response:', error.response);
+        console.error('Error config:', error.config);
+        
         if (error.response?.status === 401 || error.response?.status === 403) {
             window.localStorage.removeItem('token');
             window.location.href = '/login';

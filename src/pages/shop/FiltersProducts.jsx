@@ -83,7 +83,27 @@ const ProductFilterPage = () => {
         console.log("Sending payload:", payload);
 
         const response = await getProductsByCategory(payload);
-        setProduct(response);
+        console.log('Products API response:', response);
+        
+        // Handle different response formats
+        let productsData = [];
+        if (response && response.data) {
+          // If response.data is an array, use it directly
+          if (Array.isArray(response.data)) {
+            productsData = response.data;
+          }
+          // If response.data has a content property (pagination)
+          else if (response.data.content && Array.isArray(response.data.content)) {
+            productsData = response.data.content;
+          }
+          // If response.data itself is the products array
+          else if (response.data.products && Array.isArray(response.data.products)) {
+            productsData = response.data.products;
+          }
+        }
+        
+        console.log('Processed products data:', productsData);
+        setProduct(productsData);
       } catch (err) {
         console.error(err);
         setError("Failed to load products.");
@@ -146,7 +166,7 @@ const ProductFilterPage = () => {
           <div>
             <h2 className="text-xl font-bold mb-2">Lọc theo danh mục</h2>
             <ul className="space-y-2 text-gray-800">
-              {categories.map((cat) => {
+              {Array.isArray(categories) && categories.map((cat) => {
                 const isSelected = categoryId === String(cat.id);
                 return (
                   <li key={cat.id}>
@@ -181,7 +201,7 @@ const ProductFilterPage = () => {
           <div>
             <h2 className="text-xl font-bold mb-2">Lọc theo thẻ</h2>
             <div className="flex flex-wrap gap-2">
-              {tagsList.map((tag) => (
+              {Array.isArray(tagsList) && tagsList.map((tag) => (
                 <button
                   key={tag}
                   onClick={() => handleTagClick(tag)}
@@ -203,7 +223,7 @@ const ProductFilterPage = () => {
           <div>
             <h2 className="text-xl font-bold mb-2">Sản phẩm phổ biến</h2>
             <ul className="space-y-3">
-              {product.slice(0, 4).map((p) => (
+              {Array.isArray(product) && product.slice(0, 4).map((p) => (
                 <li key={p.id} className="flex items-center gap-3">
                   <NavLink
                     to={`/product/${p.id}`}
@@ -251,7 +271,7 @@ const ProductFilterPage = () => {
               ) : (
                 <>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                    {paginatedProducts.map((p) => (
+                    {Array.isArray(paginatedProducts) && paginatedProducts.map((p) => (
                       <NavLink
                         to={`/product/${p.id}`}
                         state={{ product: p }}
@@ -308,7 +328,7 @@ const ProductFilterPage = () => {
                         onClick={handlePrevPage}
                         disabled={currentPage === 1}
                       ></button>
-                      {[...Array(totalPages)].map((_, i) => (
+                      {Array.isArray([...Array(totalPages)]) && [...Array(totalPages)].map((_, i) => (
                         <button
                           key={i}
                           className={`w-8 h-8 rounded flex items-center justify-center text-sm font-medium ${

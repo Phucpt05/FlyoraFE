@@ -50,23 +50,90 @@ const ProductDetails = () => {
       try {
         setLoading(true);
 
+        console.log('Fetching product details for ID:', id);
         const productRes = await getProductDetail(id);
-        setProduct(productRes);
+        console.log('Product API response:', productRes);
+        
+        let productData = null;
+        if (productRes && productRes.data) {
+          productData = productRes.data;
+        } else if (productRes) {
+          productData = productRes;
+        }
+        
+        console.log('Processed product data:', productData);
+        setProduct(productData);
 
         const promotionsRes = await getPromotions(customerId);
+        console.log('Promotions API response:', promotionsRes);
+        
+        // Handle promotions response format
+        let promotionsData = [];
+        if (promotionsRes && promotionsRes.data) {
+          if (Array.isArray(promotionsRes.data)) {
+            promotionsData = promotionsRes.data;
+          } else if (promotionsRes.data.content && Array.isArray(promotionsRes.data.content)) {
+            promotionsData = promotionsRes.data.content;
+          }
+        } else if (Array.isArray(promotionsRes)) {
+          promotionsData = promotionsRes;
+        }
+        console.log('Processed promotions data:', promotionsData);
+        
         setPromotions(
-          promotionsRes.filter((promo) => promo.productId === Number(id))
+          promotionsData.filter((promo) => promo.productId === Number(id))
         );
 
-        const categoryId = categoryMap[productRes.category];
-        const relatedRes = await getProductsByCategory({
-          categoryId,
-          name: "",
-        });
-        setRelatedProducts(relatedRes);
+        // Get category ID from product data
+        const categoryName = productData?.category?.name || productData?.category;
+        const categoryId = categoryMap[categoryName];
+        
+        if (categoryId) {
+          const relatedRes = await getProductsByCategory({
+            categoryId,
+            name: "",
+          });
+          console.log('Related products API response:', relatedRes);
+          
+          // Handle related products response format
+          let relatedProductsData = [];
+          if (relatedRes && relatedRes.data) {
+            if (Array.isArray(relatedRes.data)) {
+              relatedProductsData = relatedRes.data;
+            } else if (relatedRes.data.content && Array.isArray(relatedRes.data.content)) {
+              relatedProductsData = relatedRes.data.content;
+            } else if (relatedRes.data.products && Array.isArray(relatedRes.data.products)) {
+              relatedProductsData = relatedRes.data.products;
+            }
+          } else if (Array.isArray(relatedRes)) {
+            relatedProductsData = relatedRes;
+          }
+          console.log('Processed related products data:', relatedProductsData);
+          
+          console.log('Processed related products:', relatedProductsData);
+          setRelatedProducts(relatedProductsData);
+        }
 
         const reviewRes = await getReviewsByProductId(id);
-        setReviews(reviewRes);
+        console.log('Reviews API response:', reviewRes);
+        
+        // Handle reviews response format
+        let reviewsData = [];
+        if (reviewRes && reviewRes.data) {
+          if (Array.isArray(reviewRes.data)) {
+            reviewsData = reviewRes.data;
+          } else if (reviewRes.data.content && Array.isArray(reviewRes.data.content)) {
+            reviewsData = reviewRes.data.content;
+          } else if (reviewRes.data.reviews && Array.isArray(reviewRes.data.reviews)) {
+            reviewsData = reviewRes.data.reviews;
+          }
+        } else if (Array.isArray(reviewRes)) {
+          reviewsData = reviewRes;
+        }
+        console.log('Processed reviews data:', reviewsData);
+        
+        console.log('Processed reviews:', reviewsData);
+        setReviews(reviewsData);
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to load product details. Please try again later.");
@@ -108,8 +175,22 @@ const ProductDetails = () => {
       setRating(0);
       setComment("");
 
-      const updatedReviews = await getReviewsByProductId(id);
-      setReviews(updatedReviews);
+      const updatedReviewsRes = await getReviewsByProductId(id);
+      let updatedReviewsData = [];
+      
+      if (updatedReviewsRes && updatedReviewsRes.data) {
+        if (Array.isArray(updatedReviewsRes.data)) {
+          updatedReviewsData = updatedReviewsRes.data;
+        } else if (updatedReviewsRes.data.content && Array.isArray(updatedReviewsRes.data.content)) {
+          updatedReviewsData = updatedReviewsRes.data.content;
+        } else if (updatedReviewsRes.data.reviews && Array.isArray(updatedReviewsRes.data.reviews)) {
+          updatedReviewsData = updatedReviewsRes.data.reviews;
+        }
+      } else if (Array.isArray(updatedReviewsRes)) {
+        updatedReviewsData = updatedReviewsRes;
+      }
+      
+      setReviews(updatedReviewsData);
     } catch (err) {
       console.error("Lỗi khi gửi đánh giá:", err);
       toast.error("Lỗi khi gửi đánh giá. Vui lòng thử lại.");
@@ -129,7 +210,7 @@ const ProductDetails = () => {
     }
   };
 
-  const productDetails = [
+  const productDetails = product ? [
     { label: "Tên", value: product?.name, bgColor: "bg-neutral-200" },
     {
       label: "Loại",
@@ -147,7 +228,7 @@ const ProductDetails = () => {
       value: product?.description || "Chưa có mô tả",
       bgColor: "bg-neutral-200",
     },
-  ];
+  ] : [];
 
   if (loading) return <div className="text-center py-20">Loading...</div>;
   if (error) return <div className="text-center py-20 text-red-500">{error}</div>;
@@ -186,7 +267,7 @@ const ProductDetails = () => {
                     <div className="border border-gray-300 rounded-xl overflow-hidden">
                       <Table>
                         <TableBody>
-                          {productDetails.map((detail, index) => (
+                          {Array.isArray(productDetails) && productDetails.map((detail, index) => (
                             <TableRow
                               key={index}
                               className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}
@@ -210,7 +291,7 @@ const ProductDetails = () => {
                     </h2>
                     <div className="space-y-4">
                       {promotions.length > 0 ? (
-                        promotions.map((promo) => (
+                        Array.isArray(promotions) && promotions.map((promo) => (
                           <div
                             key={promo.id}
                             className="p-4 bg-gradient-to-r from-[#f0fff4] to-[#e6fffa] rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300"
@@ -295,7 +376,7 @@ const ProductDetails = () => {
           <h2 className="text-center font-bold text-black text-[32px] mb-6">Sản phẩm khác</h2>
           <Carousel>
             <CarouselContent>
-              {relatedProducts.map((item) => (
+              {Array.isArray(relatedProducts) && relatedProducts.map((item) => (
                 <CarouselItem key={item.id} className="basis-1/2 md:basis-1/4">
                   <Link to={`/product/${item.id}`}>
                     <Card className="p-4 shadow-md rounded-xl h-full hover:shadow-lg transition-shadow duration-300">
@@ -353,7 +434,7 @@ const ProductDetails = () => {
             {reviews.length === 0 && (
               <p className="text-gray-500 text-center text-xl">Chưa có đánh giá nào</p>
             )}
-            {reviews.map((review, index) => (
+            {Array.isArray(reviews) && reviews.map((review, index) => (
               <div key={index} className="p-6 bg-white rounded-xl shadow-md">
                 <h4 className="font-bold text-black text-2xl mb-3">
                   {review.customerName || `Người dùng ${review.customerId}`}

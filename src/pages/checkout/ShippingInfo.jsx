@@ -20,7 +20,24 @@ const ShippingInfo = ({ data, onChange }) => {
         console.log("storedUser:", storedUser);
         console.log("requesterId:", requesterId);
         const res = await getProvinces(requesterId);
-        setProvinces(res);
+        console.log('Provinces API response:', res);
+        
+        // Handle different response formats
+        let provincesData = [];
+        if (res && res.data) {
+          if (Array.isArray(res.data)) {
+            provincesData = res.data;
+          } else if (res.data.content && Array.isArray(res.data.content)) {
+            provincesData = res.data.content;
+          } else if (res.data.results && Array.isArray(res.data.results)) {
+            provincesData = res.data.results;
+          }
+        } else if (Array.isArray(res)) {
+          provincesData = res;
+        }
+        
+        console.log('Processed provinces data:', provincesData);
+        setProvinces(provincesData);
       } catch (err) {
         console.error("Lỗi tải tỉnh/thành:", err);
       }
@@ -39,7 +56,24 @@ const ShippingInfo = ({ data, onChange }) => {
     const fetchDistricts = async () => {
       try {
         const res = await getDistricts(requesterId, province);
-        setDistricts(res);
+        console.log('Districts API response:', res);
+        
+        // Handle different response formats
+        let districtsData = [];
+        if (res && res.data) {
+          if (Array.isArray(res.data)) {
+            districtsData = res.data;
+          } else if (res.data.content && Array.isArray(res.data.content)) {
+            districtsData = res.data.content;
+          } else if (res.data.results && Array.isArray(res.data.results)) {
+            districtsData = res.data.results;
+          }
+        } else if (Array.isArray(res)) {
+          districtsData = res;
+        }
+        
+        console.log('Processed districts data:', districtsData);
+        setDistricts(districtsData);
         onChange({ target: { name: "district", value: "" } }); // reset district
       } catch (err) {
         console.error("Lỗi tải quận/huyện:", err);
@@ -59,8 +93,24 @@ const ShippingInfo = ({ data, onChange }) => {
     const fetchWards = async () => {
       try {
         const res = await getWards(requesterId, district);
-        console.log("✅ Wards:", res); // ← log ra danh sách để kiểm tra
-        setWards(res);
+        console.log('Wards API response:', res);
+        
+        // Handle different response formats
+        let wardsData = [];
+        if (res && res.data) {
+          if (Array.isArray(res.data)) {
+            wardsData = res.data;
+          } else if (res.data.content && Array.isArray(res.data.content)) {
+            wardsData = res.data.content;
+          } else if (res.data.results && Array.isArray(res.data.results)) {
+            wardsData = res.data.results;
+          }
+        } else if (Array.isArray(res)) {
+          wardsData = res;
+        }
+        
+        console.log('Processed wards data:', wardsData);
+        setWards(wardsData);
         onChange({ target: { name: "ward", value: "" } });
       } catch (err) {
         console.error("Lỗi tải phường/xã:", err);
