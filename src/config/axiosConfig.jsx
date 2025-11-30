@@ -1,5 +1,5 @@
 import axios from "axios";
-import {useAuth} from "../context/index.jsx";
+import {useAuthCart} from "../context/AuthCartContext.js";
 
 const axiosClient = axios.create({
     baseURL: process.env.REACT_APP_API_URL
@@ -24,7 +24,7 @@ axiosClient.interceptors.response.use(
     response => response,
     error => {
         if (error.response?.status === 401 || error.response?.status === 403) {
-            const { logout } = useAuth();
+            const { logout } = useAuthCart();
             logout();
             window.location.href = '/login';
         }
