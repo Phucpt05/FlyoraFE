@@ -1,12 +1,11 @@
 import axios from "axios";
-import {useAuthCart} from "../context/AuthCartContext.js";
 
 const axiosClient = axios.create({
     baseURL: process.env.REACT_APP_API_URL
 });
 
 axiosClient.interceptors.request.use(function (config) {
-    let token = window.localStorage.getItem('accessToken')
+    let token = window.localStorage.getItem('token')
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -15,17 +14,11 @@ axiosClient.interceptors.request.use(function (config) {
     return Promise.reject(error);
 });
 
-axiosClient.interceptors.response.use(function (response) {
-    return response.data;
-}, function (error) {
-    return error.response.data;
-});
 axiosClient.interceptors.response.use(
     response => response,
     error => {
         if (error.response?.status === 401 || error.response?.status === 403) {
-            const { logout } = useAuthCart();
-            logout();
+            window.localStorage.removeItem('token');
             window.location.href = '/login';
         }
         return Promise.reject(error);

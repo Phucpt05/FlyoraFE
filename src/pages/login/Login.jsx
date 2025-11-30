@@ -28,22 +28,17 @@ const Login = () => {
       // Gọi API đăng nhập
       const res = await LoginAPI(form.username, form.password);
 
-      // Kiểm tra xem response có token hoặc thành công không
-      // if (res && res.token) {
-      //   // Lưu token nếu cần:
-      //   localStorage.setItem("token", res.token);
-      //   setShowSuccess(true);
-      //   setTimeout(() => {
-      //     setShowSuccess(false);
-      //     navigate("/");
-      //   }, 1500);
-      // } else {
-      //   // Nếu không có token hoặc trả về không hợp lệ, báo lỗi
-      //   setError("Tài khoản hoặc mật khẩu không đúng.");
-      // }
+      console.log('Full response:', res);
+      console.log('Response status:', res.status);
+      console.log('Response data:', res.data);
 
-      if (res.status === 200) {
+      if (res.status === 200 && res.data) {
         const { userId, name, linkedId, role, token } = res.data;
+
+        if (!token) {
+          setError("Phản hồi từ máy chủ không chứa token xác thực.");
+          return;
+        }
 
         // Lưu token vào localStorage
         localStorage.setItem("token", token);
@@ -51,14 +46,6 @@ const Login = () => {
         // Lưu thông tin vào context
         login({ userId, name, linkedId, role, token });
         setShowSuccess(true);
-
-        // Lưu thông tin người dùng vào context
-        // login({
-        //   userId: res.data.userId,
-        //   name: res.data.name,
-        //   linkedId: res.data.linkedId,
-        //   role: res.data.role,
-        // });
 
         setTimeout(() => {
           setShowSuccess(false);
@@ -76,7 +63,20 @@ const Login = () => {
         setError("Tài khoản hoặc mật khẩu không đúng.");
       }
     } catch (err) {
-      setError("Đăng nhập thất bại. Vui lòng thử lại.");
+      console.error('Login error details:', err);
+      console.error('Error response:', err.response);
+      
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.response?.status === 401) {
+        setError("Tài khoản hoặc mật khẩu không đúng.");
+      } else if (err.response?.status === 403) {
+        setError("Tài khoản của bạn đã bị khóa.");
+      } else if (err.response?.status >= 500) {
+        setError("Lỗi máy chủ. Vui lòng thử lại sau.");
+      } else {
+        setError("Đăng nhập thất bại. Vui lòng kiểm tra kết nối và thử lại.");
+      }
     } finally {
       setLoading(false);
     }
