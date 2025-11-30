@@ -5,5 +5,5 @@ export const changePassword = async (currentPassword, newPassword) => {
     currentPassword,
     newPassword,
   });
-  return response;
+  return response.data; // Return only the data part of the response
 };

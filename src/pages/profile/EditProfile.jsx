@@ -13,11 +13,12 @@ const EditProfile = () => {
   const [name, setName] = useState("User1");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [currentPass, setCurrentPass] = useState("");
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [debugInfo, setDebugInfo] = useState("Initial state");
 
   const onAvatarClick = () => {
     fileInputRef.current.click();
@@ -42,8 +43,7 @@ const EditProfile = () => {
         return;
       }
 
-      const token = localStorage.getItem("token");
-      await changePassword(token, currentPass, newPass);
+      await changePassword(currentPass, newPass);
       toast.success("Đổi mật khẩu thành công");
       closePasswordModal();
       setCurrentPass("");
@@ -57,48 +57,74 @@ const EditProfile = () => {
 
   const handleSaveProfile = async () => {
     try {
-      const token = localStorage.getItem("token");
-
       const payload = {
         name,
         email,
         phone,
       };
-
-      console.log("== GỬI CẬP NHẬT HỒ SƠ ==");
-      console.log("Token:", token);
-      console.log("Payload:", payload);
-
-      const res = await updateProfile(token, payload);
+      const res = await updateProfile(payload);
       toast.success("Cập nhật hồ sơ thành công");
+      setIsEditMode(false); // Switch back to view mode after saving
     } catch (error) {
       toast.error("Lỗi khi cập nhật hồ sơ");
       console.error("Chi tiết lỗi:", error?.response?.data || error);
     }
   };
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const data = await getProfile(token);
-        setName(data.name);
-        setEmail(data.email);
-        setPhone(data.phone);
-        // Nếu có địa chỉ từ DB thì set thêm
-      } catch (error) {
-        toast.error("Không thể lấy hồ sơ người dùng");
-      }
-    };
+  const handleEditClick = () => {
+    setDebugInfo("Edit button clicked");
+    setIsEditMode(true);
+  };
 
+  const handleCancelEdit = () => {
+    setIsEditMode(false);
+    fetchProfile();
+  };
+
+  const fetchProfile = async () => {
+    try {
+      console.log("Fetching profile...");
+      const data = await getProfile(); // Remove token parameter as it's handled by interceptor
+      console.log("Profile data received:", data);
+      setName(data.name || "");
+      setEmail(data.email || "");
+      setPhone(data.phone || "");
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      toast.error("Không thể lấy hồ sơ người dùng");
+    }
+  };
+
+  useEffect(() => {
     fetchProfile();
   }, []);
 
   return (
     <div className="bg-gray-100 py-10 px-4 min-h-1/2 flex justify-center">
+      {/* Debug info - remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-0 right-0 bg-yellow-100 p-2 text-xs z-50">
+          Debug: {debugInfo} | Edit mode: {isEditMode.toString()}
+        </div>
+      )}
       <div className="bg-white rounded-lg shadow-lg w-full max-w-xl">
         <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-xl font-semibold">Cập Nhật Hồ Sơ</h2>
+          <h2 className="text-xl font-semibold">Hồ Sơ Cá Nhân</h2>
+          {!isEditMode && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Edit button clicked");
+                handleEditClick();
+              }}
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 flex items-center z-10 relative"
+              type="button"
+            >
+              <FiEdit className="mr-2" />
+              Chỉnh sửa
+            </button>
+          )}
         </div>
 
         {/* <div className="bg-gradient-to-r from-green-500 to-green-800 p-6 flex justify-center">
@@ -133,46 +159,48 @@ const EditProfile = () => {
 
         <div className="p-6 space-y-4">
           <div className="flex items-center">
-            <label className="w-24 font-medium">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="flex-1 border rounded-md px-4 py-2 shadow-sm"
-            />
+            <label className="w-24 font-medium">Họ và tên</label>
+            {isEditMode ? (
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="flex-1 border rounded-md px-4 py-2 shadow-sm"
+              />
+            ) : (
+              <div className="flex-1 px-4 py-2">{name}</div>
+            )}
           </div>
           <div className="flex items-center">
             <label className="w-24 font-medium">Email</label>
-            <input
-              type="email"
-              value={email}
-              placeholder="Nhập mail"
-              onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 border rounded-md px-4 py-2 shadow-sm"
-            />
+            {isEditMode ? (
+              <input
+                type="email"
+                value={email}
+                placeholder="Nhập mail"
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 border rounded-md px-4 py-2 shadow-sm"
+              />
+            ) : (
+              <div className="flex-1 px-4 py-2">{email}</div>
+            )}
           </div>
           <div className="flex items-center">
-            <label className="w-24 font-medium">Phone</label>
-            <input
-              type="tel"
-              value={phone}
-              placeholder="Nhập Số Điện Thoại"
-              onChange={(e) => setPhone(e.target.value)}
-              className="flex-1 border rounded-md px-4 py-2 shadow-sm"
-            />
+            <label className="w-24 font-medium">Số điện thoại</label>
+            {isEditMode ? (
+              <input
+                type="tel"
+                value={phone}
+                placeholder="Nhập Số Điện Thoại"
+                onChange={(e) => setPhone(e.target.value)}
+                className="flex-1 border rounded-md px-4 py-2 shadow-sm"
+              />
+            ) : (
+              <div className="flex-1 px-4 py-2">{phone}</div>
+            )}
           </div>
           <div className="flex items-center">
-            <label className="w-24 font-medium">Địa chỉ</label>
-            <input
-              type="text"
-              value={address}
-              placeholder="Nhập Địa Chỉ, Tên Đường, Tỉnh, TP/..."
-              onChange={(e) => setAddress(e.target.value)}
-              className="flex-1 border rounded-md px-4 py-2 shadow-sm"
-            />
-          </div>
-          <div className="flex items-center">
-            <label className="w-24 font-medium">Password</label>
+            <label className="w-24 font-medium">Mật khẩu</label>
             <div className="flex-1 relative">
               <input
                 type="password"
@@ -190,14 +218,34 @@ const EditProfile = () => {
           </div>
         </div>
 
-        <div className="p-4 flex justify-end border-t">
-          <button
-            onClick={handleSaveProfile}
-            className="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600"
-          >
-            <NavLink to="/profile">Lưu</NavLink>
-          </button>
-        </div>
+        {isEditMode && (
+          <div className="p-4 flex justify-end border-t space-x-2">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Cancel button clicked");
+                handleCancelEdit();
+              }}
+              className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600"
+              type="button"
+            >
+              Hủy
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Save button clicked");
+                handleSaveProfile();
+              }}
+              className="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600"
+              type="button"
+            >
+              Lưu
+            </button>
+          </div>
+        )}
 
         {passwordModalOpen && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
