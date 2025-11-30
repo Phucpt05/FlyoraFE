@@ -22,14 +22,25 @@ const OrderDetails = () => {
       if (orderData) {
         const images = {};
         await Promise.all(
-          orderData.items.map(async (item) => {
+          Array.isArray(orderData.items) ? orderData.items.map(async (item) => {
             try {
-              const product = await getProductDetail(item.productId);
-              images[item.productId] = product.imageUrl;
+              const productRes = await getProductDetail(item.productId);
+              console.log('Product API response in OrderDetails:', productRes);
+              
+              // Extract imageUrl from response
+              let imageUrl = null;
+              if (productRes && productRes.data) {
+                imageUrl = productRes.data.imageUrl;
+              } else if (productRes && productRes.imageUrl) {
+                imageUrl = productRes.imageUrl;
+              }
+              
+              images[item.productId] = imageUrl;
             } catch (error) {
+              console.error('Error fetching product image:', error);
               images[item.productId] = null; // fallback nếu lỗi
             }
-          })
+          }) : []
         );
         setProductImages(images);
       }
@@ -39,10 +50,10 @@ const OrderDetails = () => {
 
   if (!orderData) return null;
 
-  const subtotal = orderData.items.reduce(
+  const subtotal = Array.isArray(orderData.items) ? orderData.items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
-  );
+  ) : 0;
   const shippingCharge = 30000;
   const taxes = 0;
   const discount = 0;
@@ -65,7 +76,7 @@ const OrderDetails = () => {
 
       {/* Items */}
       <div className="space-y-4 mb-10">
-        {orderData.items.map((item) => (
+        {Array.isArray(orderData.items) && orderData.items.map((item) => (
           <div
             key={item.productId}
             className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg"

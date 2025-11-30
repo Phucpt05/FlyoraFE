@@ -13,8 +13,25 @@ const OrderHistory = () => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const data = await getOrderHistory(customerId);
-        setOrders(data);
+        const response = await getOrderHistory(customerId);
+        console.log('Order History API response:', response);
+        
+        // Extract the actual data from the response
+        let ordersData = [];
+        if (response && response.data) {
+          if (Array.isArray(response.data)) {
+            ordersData = response.data;
+          } else if (response.data.orders && Array.isArray(response.data.orders)) {
+            ordersData = response.data.orders;
+          } else if (response.data.content && Array.isArray(response.data.content)) {
+            ordersData = response.data.content;
+          }
+        } else if (Array.isArray(response)) {
+          ordersData = response;
+        }
+        
+        console.log('Processed order history data:', ordersData);
+        setOrders(ordersData);
       } catch (err) {
         console.error(err);
         setError("Failed to load order history.");
@@ -50,7 +67,7 @@ const OrderHistory = () => {
       )}
       {!loading && !error && orders.length > 0 && (
         <div className="space-y-6">
-          {orders.map((order) => {
+          {Array.isArray(orders) && orders.map((order) => {
             const subtotal = order.items.reduce(
               (sum, item) => sum + item.price * item.quantity,
               0
@@ -98,7 +115,7 @@ const OrderHistory = () => {
                 </div>
 
                 <div className="divide-y">
-                  {order.items.map((item) => (
+                  {Array.isArray(order.items) && order.items.map((item) => (
                     <div
                       key={item.productId}
                       className="flex justify-between py-3"

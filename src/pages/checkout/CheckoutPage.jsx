@@ -33,8 +33,26 @@ const CheckoutPage = () => {
       if (rawCart.length === 0) return;
 
       try {
-        const productData = await getCart(rawCart);
-        const merged = productData.map((prod) => {
+        const productDataRes = await getCart(rawCart);
+        console.log('Cart API response in Checkout:', productDataRes);
+        
+        // Extract the actual data from the response
+        let productData = [];
+        if (productDataRes && productDataRes.data) {
+          if (Array.isArray(productDataRes.data)) {
+            productData = productDataRes.data;
+          } else if (productDataRes.data.items && Array.isArray(productDataRes.data.items)) {
+            productData = productDataRes.data.items;
+          } else if (productDataRes.data.products && Array.isArray(productDataRes.data.products)) {
+            productData = productDataRes.data.products;
+          }
+        } else if (Array.isArray(productDataRes)) {
+          productData = productDataRes;
+        }
+        
+        console.log('Processed cart data in Checkout:', productData);
+        
+        const merged = Array.isArray(productData) ? productData.map((prod) => {
           const match = rawCart.find(
             (c) => c.id === prod.id || c.id === prod.productId
           );
@@ -45,7 +63,7 @@ const CheckoutPage = () => {
             price: prod.price,
             qty: match ? match.qty : 1,
           };
-        });
+        }) : [];
         setItems(merged);
       } catch (err) {
         console.error("Lỗi khi gọi getCart:", err);
@@ -185,7 +203,21 @@ const CheckoutPage = () => {
       }
 
       const orderRes = await createOrder(customerId, itemsToSend);
-      const newOrderId = orderRes.orderId;
+      console.log('Order API response:', orderRes);
+      
+      // Extract orderId from the response
+      let newOrderId = null;
+      if (orderRes && orderRes.data) {
+        newOrderId = orderRes.data.orderId || orderRes.data.id;
+      } else if (orderRes && orderRes.orderId) {
+        newOrderId = orderRes.orderId;
+      }
+      
+      if (!newOrderId) {
+        throw new Error("Không nhận được ID đơn hàng từ server");
+      }
+      
+      console.log('Extracted orderId:', newOrderId);
       setOrderId(newOrderId);
 
       const paymentMethodId = payment === "payonline" ? 1 : 2;
@@ -206,7 +238,15 @@ const CheckoutPage = () => {
 
       if (paymentMethodId === 1) {
         const payRes = await createPayment(paymentData);
-        const payUrl = payRes?.paymentUrl || payRes?.payUrl || payRes?.url;
+        console.log('Payment API response:', payRes);
+        
+        // Extract payment URL from the response
+        let payUrl = null;
+        if (payRes && payRes.data) {
+          payUrl = payRes.data.paymentUrl || payRes.data.payUrl || payRes.data.url;
+        } else if (payRes) {
+          payUrl = payRes.paymentUrl || payRes.payUrl || payRes.url;
+        }
 
         if (!payUrl) throw new Error("Không nhận được link thanh toán từ API.");
 
@@ -216,6 +256,7 @@ const CheckoutPage = () => {
         localStorage.removeItem("cart");
       } else {
         const payRes = await createPayment(paymentData);
+        console.log('Payment API response for COD:', payRes);
         setSuccess(true);
         localStorage.removeItem("cart");
       }
@@ -260,7 +301,7 @@ const CheckoutPage = () => {
             <div className="space-y-6">
               <div className="bg-white p-6 rounded-lg shadow">
                 <h2 className="text-lg font-semibold mb-4">Giỏ hàng</h2>
-                {items.map((it) => (
+                {Array.isArray(items) && items.map((it) => (
                   <div
                     key={it.id}
                     className="flex items-center justify-between mb-4"
